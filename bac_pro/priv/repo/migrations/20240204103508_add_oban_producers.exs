@@ -1,7 +1,5 @@
 defmodule BacPro.Repo.Migrations.AddObanProducers do
   use Ecto.Migration
 
-  def change do
-
-  end
+  defdelegate change, to: Oban.Pro.Migrations.Producers
 end

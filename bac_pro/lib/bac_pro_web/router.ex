@@ -1,6 +1,8 @@
 defmodule BacProWeb.Router do
   use BacProWeb, :router
 
+  import Oban.Web.Router
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -15,9 +17,31 @@ defmodule BacProWeb.Router do
   end
 
   scope "/", BacProWeb do
-    pipe_through :browser
+    pipe_through :api
 
     get "/", PageController, :home
+
+    resources "/cards", CardController, except: [:new, :edit]
+    resources "/service_activation_logs", ServiceActivationLogController, except: [:new, :edit]
+    resources "/accounts", AccountController, except: [:new, :edit]
+    resources "/customers", CustomerController, except: [:new, :edit]
+
+  end
+
+  scope "/hata", BacProWeb do
+    pipe_through :browser
+
+
+    oban_dashboard "/oban"
+
+  end
+
+  if Mix.env == :dev do
+    # If using Phoenix
+    forward "/sent_emails", Bamboo.SentEmailViewerPlug
+
+    # If using Plug.Router, make sure to add the `to`
+    # forward "/sent_emails", to: Bamboo.SentEmailViewerPlug
   end
 
   # Other scopes may use custom stacks.
@@ -36,6 +60,8 @@ defmodule BacProWeb.Router do
 
     scope "/dev" do
       pipe_through :browser
+
+
 
       live_dashboard "/dashboard", metrics: BacProWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview

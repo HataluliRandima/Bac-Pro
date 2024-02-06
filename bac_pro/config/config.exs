@@ -14,9 +14,19 @@ config :bac_pro,
 
 # config/config.exs
 config :bac_pro, Oban,
+  engine: Oban.Pro.Engines.Smart,
   repo: BacPro.Repo,
-  plugins: [Oban.Plugins.Pruner],
-  queues: [default: 10]
+  plugins: [
+  {Oban.Pro.Plugins.DynamicPruner, mode: {:max_age, {2, :days}}},
+  {
+    Oban.Pro.Plugins.DynamicQueues,
+    queues: [default: 10, valid: 12,scheduled: 10, crato: 25, events: 20]
+  }]
+  # queues: [default: 10]
+
+
+config :bac_pro, BacPro.ObMailer,
+  adapter: Bamboo.LocalAdapter
 
 
 # Configures the endpoint
@@ -65,6 +75,34 @@ config :tailwind,
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
+
+
+config :logger,
+  backends: [
+    :console,
+    {LoggerFileBackend, :error_log},
+    {LoggerFileBackend, :connection_log},
+    {LoggerFileBackend, :debugging_log}
+    ],
+  format: "$time [$level] $message $metadata\n",
+  metadata: :all,
+  # utc_log: true,
+  handle_otp_reports: true
+
+config :logger, :error_log,
+  metadata: :all,
+  path: "error.log",
+  level: :error
+
+config :logger, :connection_log,
+  path: "oban.log",
+  level: :debug
+
+config :logger, :debugging_log,
+  # metadata: :all,
+  path: "debugging.log",
+  level: :debug,
+  metadata_filter: [log: :debugging]
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason

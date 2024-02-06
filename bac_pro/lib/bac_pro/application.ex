@@ -7,6 +7,9 @@ defmodule BacPro.Application do
 
   @impl true
   def start(_type, _args) do
+
+    :ok = Oban.Pro.Worker.attach_hook(BacPro.Workershook.ErrorHook)
+
     children = [
       BacProWeb.Telemetry,
       BacPro.Repo,
